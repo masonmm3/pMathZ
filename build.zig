@@ -5,8 +5,8 @@ pub fn build(b: *Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // The function call has changed to b.addStaticLibrary
-    const lib = b.addStaticLibrary(.{
+    // Explicitly dereference the pointer using `.*`
+    const lib = b.*.addStaticLibrary(.{
         .name = "pMathz",
         .root_source_file = b.path("src/main.zig"),
         .target = target,
