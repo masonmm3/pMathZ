@@ -1,38 +1,43 @@
 const std = @import("std");
 const Build = std.Build;
 
-// Although this function looks imperative, note that its job is to
-// declaratively construct a build graph that will be executed by an external
-// runner.
 pub fn build(b: *Build) void {
-    // Standard target options allows the person running `zig build` to choose
-    // what target to build for. Here we do not override the defaults, which
-    // means any target is allowed, and the default is native. Other options
-    // for restricting supported target set are available.
     const target = b.standardTargetOptions(.{});
-
-    // Standard optimization options allow the person running `zig build` to select
-    // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
-    // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
-    const mod = b.addModule("pMathz", .{
+    // 1. Define the 'pMathz' library as a static library.
+    const pMathz_lib = b.addStaticLibrary(.{
+        .name = "pMathz",
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
 
-    // Creates a step for unit testing. This only builds the test executable
-    // but does not run it.
+    // 2. Add the library to the install step so it gets built.
+    b.installArtifact(pMathz_lib);
+
+    // 3. Create an executable that will use the library.
+    // Let's call it "my_program" for clarity.
+    const exe = b.addExecutable(.{
+        .name = "my_program",
+        .root_source_file = b.path("src/main.zig"), // Or whatever your main file is
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // 4. Link the library to the executable.
+    exe.linkLibrary(pMathz_lib);
+
+    b.installArtifact(exe);
+
     const main_tests = b.addTest(.{
-        .root_module = mod,
+        .root_source_file = b.path("src/main.zig"),
+        .target = target,
+        .optimize = optimize,
     });
 
     const run_main_tests = b.addRunArtifact(main_tests);
 
-    // This creates a build step. It will be visible in the `zig build --help` menu,
-    // and can be selected like this: `zig build test`
-    // This will evaluate the `test` step rather than the default, which is "install".
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&run_main_tests.step);
 }
