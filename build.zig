@@ -5,7 +5,6 @@ pub fn build(b: *Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Add a step to create a static library with the name "pMathz"
     const lib = b.addStaticLibrary(.{
         .name = "pMathz",
         .root_source_file = b.path("src/main.zig"),
@@ -13,18 +12,17 @@ pub fn build(b: *Build) void {
         .optimize = optimize,
     });
 
-    // Make the install step depend on this library
     b.installArtifact(lib);
 
-    // Creates a module that other projects can import
+    // This is the correct and only necessary call to add the module.
+    // The result is stored in the 'mod' variable.
     const mod = b.addModule("pMathz", .{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
 
-    // Expose the module as a dependency. This allows other projects to link to the library.
-    b.addModule("pMathz", mod);
+    // The line `b.addModule("pMathz", mod);` should be removed.
 
     const main_tests = b.addTest(.{
         .root_module = mod,
