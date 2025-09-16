@@ -5,6 +5,7 @@ pub fn build(b: *Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    // The function call has changed to b.addStaticLibrary
     const lib = b.addStaticLibrary(.{
         .name = "pMathz",
         .root_source_file = b.path("src/main.zig"),
@@ -14,15 +15,11 @@ pub fn build(b: *Build) void {
 
     b.installArtifact(lib);
 
-    // This is the correct and only necessary call to add the module.
-    // The result is stored in the 'mod' variable.
     const mod = b.addModule("pMathz", .{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
-
-    // The line `b.addModule("pMathz", mod);` should be removed.
 
     const main_tests = b.addTest(.{
         .root_module = mod,
